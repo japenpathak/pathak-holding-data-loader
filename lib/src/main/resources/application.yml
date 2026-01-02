@@ -1,0 +1,26 @@
+income:
+  invoice:
+    input: "C:/Users/Bachu-PC/OneDrive/Documents/PathakHolding/Bookkeeping/2025/raw_downloaded/Income_invoices-2025.csv"
+  datamapping:
+    columns:
+      Transaction_ID: "Transaction ID"
+      Status: "Status"
+      Date_created: "Date created"
+      Due_date: "Due date"
+      Date_paid: "Date paid"
+      Type: "Type"
+      Transaction_category: "Transaction category"
+      Original_amount: "Total amount"
+      Payment: "Paid amount"
+      Balance: "Left amount"
+      Method_of_payment: "Method of payment"
+      Payer: "Payer/payee"
+      LeaseNum: "Lease #"
+      Property: "Property name"
+      Unit: "Unit #"
+      Transaction_details: "Transaction details"
+      Exclude_Zaky: "Exclude Zaky"
+      SD_Applied: "SD Applied"
+  year: 2025
+  force:
+    overwrite: false
