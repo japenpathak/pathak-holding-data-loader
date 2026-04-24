@@ -23,8 +23,12 @@ public class VacancyLossGeneratorTest {
         // Reset tables to isolate this test (DatabaseManager may keep a persistent DB across tests)
         try (Connection conn = db.getConnection()) {
             conn.setAutoCommit(false);
-            // Order matters due to FKs
+            // Order matters due to FKs (delete children first)
             try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Income")) { ps.executeUpdate(); }
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Expense")) { ps.executeUpdate(); }
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Bank_transaction_staging")) { ps.executeUpdate(); }
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Bank_Payment")) { ps.executeUpdate(); }
+            try (PreparedStatement ps = conn.prepareStatement("DELETE FROM File_Processing")) { ps.executeUpdate(); }
             try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Lease_Tenant")) { ps.executeUpdate(); }
             try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Lease")) { ps.executeUpdate(); }
             try (PreparedStatement ps = conn.prepareStatement("DELETE FROM Units")) { ps.executeUpdate(); }
@@ -37,14 +41,15 @@ public class VacancyLossGeneratorTest {
             conn.setAutoCommit(false);
 
             // Property + Unit
-            try (PreparedStatement ps = conn.prepareStatement("MERGE INTO Property (ID, Name, Full_Address, Number_of_units) KEY(ID) VALUES (?,?,?,?)")) {
+            try (PreparedStatement ps = conn.prepareStatement("MERGE INTO Property (ID, Name, Full_Address, Number_of_units, Acquired_Date) KEY(ID) VALUES (?,?,?,?,?)")) {
                 ps.setInt(1, propertyId);
                 ps.setString(2, "P1");
                 ps.setString(3, "A1");
                 ps.setInt(4, 1);
+                ps.setNull(5, java.sql.Types.DATE);
                 ps.executeUpdate();
             }
-            try (PreparedStatement ps = conn.prepareStatement("MERGE INTO Units (ID, Name, Property, Bedrooms, Bathrooms, Has_Porch, Has_Back_Yard, Washer_Dryer) KEY(ID) VALUES (?,?,?,?,?,?,?,?)")) {
+            try (PreparedStatement ps = conn.prepareStatement("MERGE INTO Units (ID, Name, Property, Bedrooms, Bathrooms, Has_Porch, Has_Back_Yard, Washer_Dryer, IS_Unit_Group, Group_reference) KEY(ID) VALUES (?,?,?,?,?,?,?,?,?,?)")) {
                 ps.setInt(1, unitId);
                 ps.setString(2, "U1");
                 ps.setInt(3, propertyId);
@@ -53,6 +58,8 @@ public class VacancyLossGeneratorTest {
                 ps.setString(6, "N");
                 ps.setString(7, "N");
                 ps.setString(8, "N");
+                ps.setString(9, "N");
+                ps.setNull(10, java.sql.Types.INTEGER);
                 ps.executeUpdate();
             }
 
@@ -99,10 +106,10 @@ public class VacancyLossGeneratorTest {
         }
 
         // Run vacancy generator
-        IncomeLoader loader = new IncomeLoader();
+        VacancyLossService service = new VacancyLossService();
         try (Connection conn = db.getConnection()) {
             conn.setAutoCommit(false);
-            int inserted = loader.generateVacancyLossForYear(conn, year);
+            int inserted = service.generateForYear(conn, year);
             conn.commit();
 
             assertEquals(11, inserted);

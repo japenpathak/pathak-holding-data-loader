@@ -4,8 +4,12 @@ import com.ph.dl.database.DatabaseManager;
 
 import java.math.BigDecimal;
 import java.sql.*;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.TextStyle;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 public class Income {
     private String transactionId;
@@ -254,5 +258,70 @@ public class Income {
             e.printStackTrace();
         }
         return list;
+    }
+
+    /**
+     * Shared rent-month calculation used by vacancy-loss generation.
+     * Matches the previous IncomeLoader behavior: dueDate + 5 days, then month name.
+     */
+    public static String calcRentMonth(java.sql.Date dueDate) {
+        if (dueDate == null) return "";
+        LocalDate ld = new java.util.Date(dueDate.getTime()).toInstant().atZone(ZoneId.systemDefault()).toLocalDate().plusDays(5);
+        return ld.getMonth().getDisplayName(TextStyle.FULL, Locale.ENGLISH);
+    }
+
+    public static boolean vacancyRowExists(Connection conn, int year, int propertyId, int unitId, java.sql.Date dueDate) throws SQLException {
+        String sql = "SELECT 1 FROM Income WHERE Year=? AND Property=? AND Unit=? AND Status='Vacancy' AND Due_date=? FETCH FIRST 1 ROWS ONLY";
+        try (PreparedStatement ps = conn.prepareStatement(sql)) {
+            ps.setInt(1, year);
+            ps.setInt(2, propertyId);
+            ps.setInt(3, unitId);
+            ps.setDate(4, dueDate);
+            try (ResultSet rs = ps.executeQuery()) {
+                return rs.next();
+            }
+        }
+    }
+
+    /**
+     * Inserts a vacancy-loss synthetic Income row.
+     *
+     * @return 1 if inserted
+     */
+    public static int insertVacancyRow(Connection conn,
+                                      String transactionId,
+                                      int year,
+                                      int propertyId,
+                                      int unitId,
+                                      java.sql.Date firstOfMonth,
+                                      BigDecimal baseRent,
+                                      String rentMonth) throws SQLException {
+        try (PreparedStatement ins = conn.prepareStatement(
+                "INSERT INTO Income (Transaction_ID, Status, Date_created, Due_date, Date_paid, Type, Transaction_category, Rent_Month, Original_amount, Payment, Balance, Vacancy, Method_of_payment, Payer, LeaseNum, Property, Unit, Transaction_details, Exclude_Zaky, SD_Applied, Year) " +
+                        "VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)")) {
+            ins.setString(1, transactionId);
+            ins.setString(2, "Vacancy");
+            ins.setDate(3, firstOfMonth);
+            ins.setDate(4, firstOfMonth);
+            ins.setNull(5, Types.DATE);
+            ins.setString(6, "Income");
+            ins.setString(7, "Rent");
+            ins.setString(8, rentMonth);
+            ins.setBigDecimal(9, baseRent);
+            ins.setNull(10, Types.DECIMAL);
+            ins.setNull(11, Types.DECIMAL);
+            ins.setBigDecimal(12, baseRent);
+            ins.setNull(13, Types.VARCHAR);
+            ins.setNull(14, Types.INTEGER);
+            ins.setNull(15, Types.INTEGER);
+            ins.setInt(16, propertyId);
+            ins.setInt(17, unitId);
+            ins.setNull(18, Types.VARCHAR);
+            ins.setNull(19, Types.VARCHAR);
+            ins.setNull(20, Types.VARCHAR);
+            ins.setInt(21, year);
+            ins.executeUpdate();
+            return 1;
+        }
     }
 }

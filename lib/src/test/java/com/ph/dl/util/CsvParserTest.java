@@ -20,8 +20,22 @@ public class CsvParserTest {
         List<Map<String,Object>> rows = CsvParser.parse(tmp.getAbsolutePath());
         assertEquals(1, rows.size());
         Map<String,Object> row = rows.get(0);
-        assertEquals("ABC123", row.get("Transaction ID"));
-        assertEquals("Paid", row.get("Status"));
+        assertEquals("ABC123", row.get("transaction id"));
+        assertEquals("Paid", row.get("status"));
+        tmp.delete();
+    }
+
+    @Test
+    void trimsAndNormalizesHeaders() throws Exception {
+        File tmp = File.createTempFile("units-test", ".csv");
+        try (FileWriter fw = new FileWriter(tmp)) {
+            fw.write("ID, group_reference\n");
+            fw.write("1,5\n");
+        }
+        List<Map<String, Object>> rows = CsvParser.parse(tmp.getAbsolutePath());
+        assertEquals(1, rows.size());
+        assertEquals("1", rows.get(0).get("id"));
+        assertEquals("5", rows.get(0).get("group_reference"));
         tmp.delete();
     }
 

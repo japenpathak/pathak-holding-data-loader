@@ -3,24 +3,35 @@ income:
     input: "C:/Users/Bachu-PC/OneDrive/Documents/PathakHolding/Bookkeeping/2025/raw_downloaded/Income_invoices-2025.csv"
   datamapping:
     columns:
-      Transaction_ID: "Transaction ID"
-      Status: "Status"
-      Date_created: "Date created"
-      Due_date: "Due date"
-      Date_paid: "Date paid"
-      Type: "Type"
-      Transaction_category: "Transaction category"
-      Original_amount: "Total amount"
-      Payment: "Paid amount"
-      Balance: "Left amount"
-      Method_of_payment: "Method of payment"
-      Payer: "Payer/payee"
-      LeaseNum: "Lease #"
-      Property: "Property name"
-      Unit: "Unit #"
-      Transaction_details: "Transaction details"
-      Exclude_Zaky: "Exclude Zaky"
-      SD_Applied: "SD Applied"
+      Transaction_ID: "transaction id"
+      Status: "status"
+      Date_created: "date created"
+      Due_date: "due date"
+      Date_paid: "date paid"
+      Type: "type"
+      Transaction_category: "transaction category"
+      Original_amount: "total amount"
+      Payment: "paid amount"
+      Balance: "left amount"
+      Method_of_payment: "method of payment"
+      Payer: "payer/payee"
+      LeaseNum: "lease #"
+      Property: "property name"
+      Unit: "unit #"
+      Transaction_details: "transaction details"
+      Exclude_Zaky: "exclude zaky"
+      SD_Applied: "sd applied"
   year: 2025
+  vacancy:
+      recompute: false
   force:
     overwrite: false
+
+bank:
+  transactions:
+    input: "C:/Users/Bachu-PC/OneDrive/Documents/PathakHolding/Bookkeeping/2025/raw_downloaded/Chase_7996_ALL_Activity_20251227.CSV"
+    year: 2025
+
+email:
+  gmail:
+    enabled: false

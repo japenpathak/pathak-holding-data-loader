@@ -14,6 +14,8 @@ public class Units {
     private String hasPorch;
     private String hasBackYard;
     private String washerDryer;
+    private String isUnitGroup;
+    private Integer groupReference;
 
     public Units() {}
 
@@ -44,10 +46,14 @@ public class Units {
     public void setHasBackYard(String hasBackYard) { this.hasBackYard = hasBackYard; }
     public String getWasherDryer() { return washerDryer; }
     public void setWasherDryer(String washerDryer) { this.washerDryer = washerDryer; }
+    public String getIsUnitGroup() { return isUnitGroup; }
+    public void setIsUnitGroup(String isUnitGroup) { this.isUnitGroup = isUnitGroup; }
+    public Integer getGroupReference() { return groupReference; }
+    public void setGroupReference(Integer groupReference) { this.groupReference = groupReference; }
 
     // Insert
     public void insert() {
-        String sql = "INSERT INTO Units (Name, Property, Bedrooms, Bathrooms, Has_Porch, Has_Back_Yard, Washer_Dryer) VALUES (?, ?, ?, ?, ?, ?, ?)";
+        String sql = "INSERT INTO Units (Name, Property, Bedrooms, Bathrooms, Has_Porch, Has_Back_Yard, Washer_Dryer, IS_Unit_Group, Group_reference) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS)) {
             pstmt.setString(1, name);
@@ -57,6 +63,12 @@ public class Units {
             pstmt.setString(5, hasPorch);
             pstmt.setString(6, hasBackYard);
             pstmt.setString(7, washerDryer);
+            pstmt.setString(8, isUnitGroup);
+            if (groupReference == null) {
+                pstmt.setNull(9, java.sql.Types.INTEGER);
+            } else {
+                pstmt.setInt(9, groupReference);
+            }
             pstmt.executeUpdate();
             ResultSet rs = pstmt.getGeneratedKeys();
             if (rs.next()) {
@@ -69,7 +81,7 @@ public class Units {
 
     // Update
     public void update() {
-        String sql = "UPDATE Units SET Name = ?, Property = ?, Bedrooms = ?, Bathrooms = ?, Has_Porch = ?, Has_Back_Yard = ?, Washer_Dryer = ? WHERE ID = ?";
+        String sql = "UPDATE Units SET Name = ?, Property = ?, Bedrooms = ?, Bathrooms = ?, Has_Porch = ?, Has_Back_Yard = ?, Washer_Dryer = ?, IS_Unit_Group = ?, Group_reference = ? WHERE ID = ?";
         try (Connection conn = DatabaseManager.getInstance().getConnection();
              PreparedStatement pstmt = conn.prepareStatement(sql)) {
             pstmt.setString(1, name);
@@ -79,7 +91,13 @@ public class Units {
             pstmt.setString(5, hasPorch);
             pstmt.setString(6, hasBackYard);
             pstmt.setString(7, washerDryer);
-            pstmt.setInt(8, id);
+            pstmt.setString(8, isUnitGroup);
+            if (groupReference == null) {
+                pstmt.setNull(9, java.sql.Types.INTEGER);
+            } else {
+                pstmt.setInt(9, groupReference);
+            }
+            pstmt.setInt(10, id);
             pstmt.executeUpdate();
         } catch (SQLException e) {
             e.printStackTrace();
@@ -103,6 +121,9 @@ public class Units {
                 u.hasPorch = rs.getString("Has_Porch");
                 u.hasBackYard = rs.getString("Has_Back_Yard");
                 u.washerDryer = rs.getString("Washer_Dryer");
+                u.isUnitGroup = rs.getString("IS_Unit_Group");
+                int gr = rs.getInt("Group_reference");
+                u.groupReference = rs.wasNull() ? null : gr;
                 return u;
             }
         } catch (SQLException e) {
@@ -128,6 +149,9 @@ public class Units {
                 u.hasPorch = rs.getString("Has_Porch");
                 u.hasBackYard = rs.getString("Has_Back_Yard");
                 u.washerDryer = rs.getString("Washer_Dryer");
+                u.isUnitGroup = rs.getString("IS_Unit_Group");
+                int gr = rs.getInt("Group_reference");
+                u.groupReference = rs.wasNull() ? null : gr;
                 list.add(u);
             }
         } catch (SQLException e) {

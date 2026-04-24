@@ -59,4 +59,27 @@ public class YamlConfig {
         }
         return result;
     }
+
+    @SuppressWarnings("unchecked")
+    public Map<String, Object> getBankConfig() {
+        return (Map<String, Object>) root.get("bank");
+    }
+
+    public String getBankTransactionsCsvPath() {
+        Map<String, Object> bank = getBankConfig();
+        if (bank == null) throw new RuntimeException("bank not specified in application.yml");
+        Map<String, Object> tx = (Map<String, Object>) bank.get("transactions");
+        if (tx == null) throw new RuntimeException("bank.transactions not specified in application.yml");
+        return (String) tx.get("input");
+    }
+
+    public int getBankTransactionsYear() {
+        Map<String, Object> bank = getBankConfig();
+        if (bank == null) throw new RuntimeException("bank not specified in application.yml");
+        Map<String, Object> tx = (Map<String, Object>) bank.get("transactions");
+        if (tx == null) throw new RuntimeException("bank.transactions not specified in application.yml");
+        Object year = tx.get("year");
+        if (year == null) throw new RuntimeException("bank.transactions.year not specified in application.yml");
+        return Integer.parseInt(String.valueOf(year));
+    }
 }
